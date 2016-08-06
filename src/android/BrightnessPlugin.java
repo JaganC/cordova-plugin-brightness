@@ -9,6 +9,20 @@ import android.app.Activity;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManager;
 import android.view.Window;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
+import android.widget.FrameLayout;
+
 
 /**
  * @author Evgeniy Lukovsky
@@ -79,29 +93,21 @@ public class BrightnessPlugin extends CordovaPlugin {
 	 * @param callbackContext
 	 * @return
 	 */
-	private boolean setBrightness(JSONArray args, CallbackContext callbackContext) {
-		try {
-			Activity activity = cordova.getActivity();
-			WindowManager.LayoutParams layoutParams = activity.getWindow().getAttributes();
-			String value = args.getString(0);
-			double brightness = Double.parseDouble(value);
-			layoutParams.screenBrightness = (float) brightness;
-			SetTask task = new SetTask();
-			task.setParams(activity, layoutParams);
-			activity.runOnUiThread(task);
-			callbackContext.success("OK");
-
-		} catch (NullPointerException e) {
-			System.out.println("Null pointer exception");
-			System.out.println(e.getMessage());
-			callbackContext.error(e.getMessage());
-			return false;
-		} catch (JSONException e) {
-			System.out.println("JSONException exception");
-			System.out.println(e.getMessage());
-			callbackContext.error(e.getMessage());
-			return false;
-		}
+	private boolean setBrightness(val, CallbackContext callbackContext) {
+		try{
+            brightness = val;
+            Settings.System.putInt(cResolver,Settings. System.SCREEN_BRIGHTNESS, brightness);
+            //Get the current window attributes
+            WindowManager.LayoutParams layoutpars = window.getAttributes();
+            //Set the brightness of this window
+            layoutpars.screenBrightness = brightness / (float)255;
+            //Apply attribute changes to this window
+            window.setAttributes(layoutpars);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            prefs.edit().putString(MyApplication.PREFS_NAME, String.valueOf(brightness)).commit();
+        }catch (Exception e){
+            Log.v("Exception>","In Setting Brightness>>>"+e);
+        }
 		System.out.println("All went fine.");
 		return true;
 	}
